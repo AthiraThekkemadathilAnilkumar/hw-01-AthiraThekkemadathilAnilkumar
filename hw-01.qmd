@@ -1,26 +1,401 @@
 ---
 title: "HW 01"
-author: "INSERT YOUR NAME HERE"
+author: "Athira Thekkemadathil Anilkumar"
 format: html
 toc: true
 ---
 
-## 1 - Road traffic accidents in Edinburgh
+#Install and load packages
+install.packages("devtools")
+devtools::install_github("rstudio-education/dsbox")
+install.packages("tidyverse")
+install.packages("ggpubr")
+install.packages("scales")
+install.packages("openintro")
+install.packages("pander")
+install.packages("ggmap")
+install.packages("dplyr")
 
-```{r label-me-1}
+library(dsbox)
+library(tidyverse)
+library(ggpubr)
+library(scales)
+library(openintro)
+library(lubridate)
+library(ggmap)
+library(ggrepel)
+library(gridExtra)
+library(pander)
+library(ggplot2)
+library(dplyr)
 
-```
+# set theme for ggplot2
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
+
+# 1 - Road traffic accidents in Edinburgh
+#----------------Excerise 1---------------------------
+
+#To view the dataset details
+str(accidents)
+
+#grouping the days to weekdays and weekend
+accidents <- accidents |>
+  mutate(r_days = ifelse(day_of_week %in% c("Saturday", "Sunday"), "Weekend", "Weekday"))
+
+#
+ggplot(accidents, mapping =  aes(x = time, fill = severity)) +
+  geom_density(alpha = 0.5)+
+  facet_wrap(~r_days, dir = 'v') +
+  labs(x = "Time of Day",
+       y = "Density",
+       color = NULL,
+       title = "Number of Accidents throughout the day",
+       subtitle = "By day of week and severity") +
+  theme(plot.title = element_text(size = 14),
+        plot.subtitle = element_text(size = 11))
+
+
+
+#----------------Exercise 1 Ends---------------------------
 
 ## 2 - NYC marathon winners
+#----------------Exercise 2 -------------------------------
 
-```{r label-me-2}
+#ggplot(data = nyc_marathon, mapping = aes(x = time)) 
 
-```
+# Histogram
+ggplot(nyc_marathon,
+       aes(x = time)) +
+  geom_histogram(fill='sky blue') +
+  labs (x = "Time",
+       y = "Count",
+       color = NULL,
+       title = "Histogram of NYC Marathon Times")
+
+
+# Box plot
+ggplot(nyc_marathon,
+       aes(x = time)) +
+  geom_boxplot() +
+  labs (x = "Time",
+        y = "Count",
+        color = NULL,
+        title = "Box Plot of NYC Marathon Times")
+
+#>Histogram provides the detailed view of the distribution shape whereas in 
+#>the box plot shows the precise values like central tendency,interquartile 
+#>range and any outlier more clearly. Identifying outlier is easier in boxplot 
+
+
+# Part b: Side-by-side box plots for men and women
+ggplot(nyc_marathon, 
+       aes(x = division,
+           y = time,
+           fill = division)) +
+  geom_boxplot() +
+  scale_fill_manual (values = c("lightblue", "pink"))+
+  labs (x = "Gender",
+        y = "Time",
+        color = NULL,
+        title = "Marathon Times by Gender")
+
+#> From the plot,we can interpret that men finishes the marathon much faster
+#> the women. The median of the men falls under 2.20 whereas the women is greater
+#> then 2.20. The outlier of women are spread over a wide range than the men. 
+
+# Part c: Redo the plot without redundancy
+ggplot(nyc_marathon, 
+       aes(x = division,
+           y = time,
+           fill = division)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("lightblue", "pink")) +
+  labs(x = NULL) +
+  theme(legend.position = "none")
+
+#> The legand for division is redundant because aesthetic is already mapped to
+#> division. Reducing the redundancy present in the box spot reduces the ink used 
+#> for labels and axes and improves the data-to-ink ratio.
+
+# Part d: Visualize marathon times of men and women over the years
+
+# Create a data frame for the plot
+marathon_plot_data <- data.frame(
+  Year = nyc_marathon$year,
+  Time = nyc_marathon$time_hrs,
+  Gender = nyc_marathon$division
+)
+
+# Define custom colors for men and women
+colors <- c("lightblue", "pink")
+
+# Create a time series plot
+ggplot(marathon_plot_data, aes(x = Year, y = Time, color = Gender)) +
+  geom_line() +
+  geom_smooth(method = "loess", se = FALSE, alpha = 0.5) +
+  labs(title = "Marathon Times Over the Years by Gender",
+       x = "Year",
+       y = "Time",
+       color = "Gender") +
+  scale_color_manual(values = colors) +
+  scale_shape_manual(values = c(19, 17))
+
+#> The time series plot shows how marathon times for men and women have 
+#> changed over the years. The finishing time where gradually decreasing from the
+#> year 1970 but  by 2020 the finishing time increased. 
+#----------------Exercise 2  Ends-------------------------------
 
 ## 3 - US counties
+#----------------Exercise 3------------------------------------
 
+#To view the dataset details
+str(county)
+# 3.a
+ggplot(county) +
+  geom_point(aes(x = median_edu, y = median_hh_income)) +
+  geom_boxplot(aes(x = smoking_ban, y = pop2017))
+
+#> yes this code works.This part creates a scatter plot with 
+#> the x-axis representing the "median_edu" variable (median education level) 
+#> and the y-axis representing the "median_hh_income" variable 
+#> (median household income). And also it creates a box plot with 
+#> x-axis representing the "smoking_ban" variable.
+#> As scatter plot are used to compare two continuous variable whereas the
+#> box plot are used to visualize the distribution of a continuous variable.
+#> The combination of this two plots doesn't provides any meaningful insights.
+#> Even the choice of variables for the x and y axis in box plot is inappropriate
+
+#3.b
+ggplot(county %>% filter(!is.na(median_edu))) + 
+  geom_point(aes(x = homeownership, y = poverty)) + 
+  facet_grid(median_edu ~ .)
+
+ggplot(county %>% filter(!is.na(median_edu))) + 
+  geom_point(aes(x = homeownership, y = poverty)) + 
+  facet_grid(. ~ median_edu)
+
+#> The second plot makes us to understand the poverty level within each 
+#> educational level because the second plot creates separate panels for each
+#> level of median education. 
+
+#Plot A
+ggplot(county, aes(x = homeownership,
+                   y = poverty)) +
+  geom_point() +
+  labs (title = "Plot A",
+       x = "Homeownership",
+       y = "Poverty")
+
+#Plot B
+ggplot(county, aes(x = homeownership,
+                   y = poverty)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  labs (title = "Plot B",
+        x = "Homeownership",
+        y = "Poverty")
+
+#Plot C
+ggplot(county, aes(x = homeownership,
+                   y = poverty,
+                   group = metro)) +
+  geom_point() +
+  geom_smooth(se = FALSE, color = 'green') +
+  labs (title = "Plot C",
+        x = "Homeownership",
+        y = "Poverty")
+
+#Plot D
+ggplot(county,
+       aes(x = homeownership,
+           y = poverty,
+           group = metro)) +
+  geom_smooth(se = FALSE) +
+  geom_point() +
+  labs (title = "Plot D",
+        x = "Homeownership",
+        y = "Poverty")
+
+#Plot E
+ggplot(county,
+       aes(x = homeownership,
+           y = poverty,
+           group = metro,
+           color = metro)) +
+  geom_point() +
+  geom_smooth(aes(linetype = metro),
+              se = FALSE,
+              color = 'blue') +
+  labs (title = "Plot E",
+        x = "Homeownership",
+        y = "Poverty") +
+  guides(color = guide_legend(order = 2),
+         linetype = guide_legend(order = 1))
+
+#Plot F
+ggplot(county,
+       aes(x = homeownership,
+           y = poverty,
+           group = metro,
+           color = metro)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  labs (title = "Plot F",
+        x = "Homeownership",
+        y = "Poverty")
+
+#Plot G
+ggplot(county,
+       aes(x = homeownership,
+           y = poverty,
+           color = metro)) +
+  geom_point() +
+  geom_smooth(aes(group = "all"),
+              se = FALSE) +
+  labs (title = "Plot G",
+        x = "Homeownership",
+        y = "Poverty")
+
+#Plot H
+ggplot(county,
+       aes(x = homeownership,
+           y = poverty,
+           color = metro)) +
+  geom_point() +
+  labs (title = "Plot H",
+        x = "Homeownership",
+        y = "Poverty")
+#----------------Exercise 3  Ends-------------------------------
 
 ## 4 - Rental apartments in SF
+#----------------Exercise 4-------------------------------------
 
+#Reading in the rent datasets
+rent <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-07-05/rent.csv")
+
+# Filter the dataset for San Francisco, full units, and relevant years
+rent <- rent |>
+  filter(rent$city == "san francisco", rent$room_in_apt == 0, rent$year >= 2009)
+
+# Define a list of neighborhoods to include in the plot
+selected_neighborhoods <- c("mission district", "outer richmond", "outer sunset", "downtown", "nob hill", "sea cliff","parkside")
+
+# Filter the data to include only the selected neighborhoods
+sf_rentals_filtered <- rent %>%
+  filter(nhood %in% selected_neighborhoods)
+
+# Create a box plot with facets for each neighborhood
+ggplot(sf_rentals_filtered, aes(x = year, y = price/ beds, fill = nhood)) +
+  geom_boxplot() +
+  facet_wrap(~nhood) +
+  labs(title = "Rental Prices per Bedroom Across Neighborhoods (2009 and onwards)",
+       x = "Year",
+       y = "Price per Bedroom",
+       fill = "Neighborhood") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis_d(option = "D", direction = -1)   # Use a color scale for neighborhoods
+  
+#>I chose a box plot with facets because it effectively visualizes the 
+#>distribution of rental prices per bedroom by year for each neighborhood. 
+#>Box plots provide insights into the central tendency, 
+#>spread, and variability of the data within each neighborhood and year.
+#>I filtered the dataset to include years starting from 2009 and took 8 
+#>neighborhoods.This visualization can help renters and property 
+#>investors understand how rental prices vary across neighborhoods in San 
+#>Francisco and make informed decisions based on their budget and preferences.
+#----------------Exercise 4  Ends-------------------------------
 
 ## 5 - Napoleon’s march.
+#----------------Exercise 5-------------------------------
+
+ #Reading the dataset
+napolean <- readRDS("data/napoleon.rds")
+
+cities <- napolean$cities
+print(cities)
+
+temperature <- napolean$temperatures
+print(temperature)
+
+troops <- napolean$troops 
+print(troops) %>%
+
+# Convert string to actual date
+mutate(date = dmy(date)) 
+
+#>The troops data includes five variables about troop movement: 
+#>location(lattitude and longitude), number of survivors, direction and group. To get a basic 
+#>skeleton of the original plot. Each of these variables maps well into ggplot's 
+#>aesthetic-based paradigm.
+#>
+#>The size of the path cannot be describe properly as ggplot automatically
+#> makes discrete categories for the survivors variable. 
+
+
+troops %>% head() %>% pandoc.table(style = "rmarkdown")
+
+ggplot(troops, aes(x = long, y = lat, group = group)) +
+  geom_path()
+
+ggplot(troops, aes(x = long, y = lat, group = group, 
+                   color = direction, size = survivors)) +
+  geom_path()
+
+ggplot(troops, aes(x = long, y = lat, group = group, 
+                   color = direction, size = survivors)) +
+  geom_path(lineend = "round")
+
+ggplot(troops, aes(x = long, y = lat, group = group, 
+                   color = direction, size = survivors)) +
+  geom_path(lineend = "round") +
+  scale_size(range = c(0.5, 15))
+
+#> The x and y axes show the longitude and latitude of the troops. 
+#> The cities in the original data can be added with geom_point() 
+#> and geom_text().
+
+ggplot(troops, aes(x = long, y = lat, group = group, 
+                   color = direction, size = survivors)) +
+  geom_path(lineend = "round") +
+  scale_size(range = c(0.5, 15)) + 
+  scale_colour_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL, y = NULL) + 
+  guides(color = FALSE, size = FALSE)
+
+ggplot() +
+  geom_path(data = troops, aes(x = long, y = lat, group = group, 
+                               color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat)) +
+  geom_text(data = cities, aes(x = long, y = lat, label = city), vjust = 1.5) +
+  scale_size(range = c(0.5, 15)) + 
+  scale_colour_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL, y = NULL) + 
+  guides(color = FALSE, size = FALSE)
+
+#geom_text_repel is used to plotting  the cities name.
+
+ggplot() +
+  geom_path(data = troops, aes(x = long, y = lat, group = group, 
+                               color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat),
+             color = "#DC5B44") +
+  geom_text_repel(data = cities, aes(x = long, y = lat, label = city),
+                  color = "#DC5B44", family = "Open Sans Condensed Bold") +
+  scale_size(range = c(0.5, 15)) + 
+  scale_colour_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL, y = NULL) + 
+  guides(color = FALSE, size = FALSE)
+#----------------Exercise 5  Ends-------------------------------
+
+
+# --------The refernce link include --------
+#>1. https://ggplot2.tidyverse.org/reference/
+#>    used for ggplot function refernce 
+#>2. The slides shared in the class. Refered the code and plot 
+#>3. https://github.com/andrewheiss/fancy-minard.
+#>      Reffered for plotting Napoleon’s march plot. 
+#>4. Used chatGPT for referring 4th question. 
+#>5. Reffered stackoverflow when verious error occured. 
