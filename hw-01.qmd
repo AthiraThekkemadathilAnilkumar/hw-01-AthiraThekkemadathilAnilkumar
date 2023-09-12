@@ -2,35 +2,36 @@
 title: "HW 01"
 author: "Athira Thekkemadathil Anilkumar"
 format: html
-toc: true
+toc: true 
 ---
 
+```{r}
 #Install and load packages
-install.packages("devtools")
-devtools::install_github("rstudio-education/dsbox")
-install.packages("tidyverse")
-install.packages("ggpubr")
-install.packages("scales")
-install.packages("openintro")
-install.packages("pander")
-install.packages("ggmap")
-install.packages("dplyr")
+if (!require(package = "pacman")) {
+  install.packages("pacman")
+}
+pacman::p_load(tidyverse,
+               scales,
+               dplyr,
+               dsbox,
+               ggplot2,
+               openintro,
+               ggrepel,
+               gridExtra,
+               ggpubr,
+               pander,
+               ggmap)
 
-library(dsbox)
-library(tidyverse)
-library(ggpubr)
-library(scales)
-library(openintro)
-library(lubridate)
-library(ggmap)
-library(ggrepel)
-library(gridExtra)
-library(pander)
-library(ggplot2)
-library(dplyr)
+```
 
+
+```{r}
 # set theme for ggplot2
 ggplot2::theme_set(ggplot2::theme_minimal(base_size = 14))
+```
+
+
+```{r}
 
 # 1 - Road traffic accidents in Edinburgh
 #----------------Excerise 1---------------------------
@@ -46,6 +47,7 @@ accidents <- accidents |>
 ggplot(accidents, mapping =  aes(x = time, fill = severity)) +
   geom_density(alpha = 0.5)+
   facet_wrap(~r_days, dir = 'v') +
+  scale_fill_manual(values = c ("#b19cd9","#b0c4de","#d0db61")) +
   labs(x = "Time of Day",
        y = "Density",
        color = NULL,
@@ -57,7 +59,8 @@ ggplot(accidents, mapping =  aes(x = time, fill = severity)) +
 
 
 #----------------Exercise 1 Ends---------------------------
-
+```
+```{r}
 ## 2 - NYC marathon winners
 #----------------Exercise 2 -------------------------------
 
@@ -144,7 +147,10 @@ ggplot(marathon_plot_data, aes(x = Year, y = Time, color = Gender)) +
 #> changed over the years. The finishing time where gradually decreasing from the
 #> year 1970 but  by 2020 the finishing time increased. 
 #----------------Exercise 2  Ends-------------------------------
+```
 
+
+```{r}
 ## 3 - US counties
 #----------------Exercise 3------------------------------------
 
@@ -179,7 +185,7 @@ ggplot(county %>% filter(!is.na(median_edu))) +
 #> level of median education. 
 
 #Plot A
-ggplot(county, aes(x = homeownership,
+p1 <-ggplot(county, aes(x = homeownership,
                    y = poverty)) +
   geom_point() +
   labs (title = "Plot A",
@@ -187,7 +193,7 @@ ggplot(county, aes(x = homeownership,
        y = "Poverty")
 
 #Plot B
-ggplot(county, aes(x = homeownership,
+p2 <- ggplot(county, aes(x = homeownership,
                    y = poverty)) +
   geom_point() +
   geom_smooth(se = FALSE) +
@@ -196,7 +202,7 @@ ggplot(county, aes(x = homeownership,
         y = "Poverty")
 
 #Plot C
-ggplot(county, aes(x = homeownership,
+p3 <- ggplot(county, aes(x = homeownership,
                    y = poverty,
                    group = metro)) +
   geom_point() +
@@ -206,7 +212,7 @@ ggplot(county, aes(x = homeownership,
         y = "Poverty")
 
 #Plot D
-ggplot(county,
+p4 <- ggplot(county,
        aes(x = homeownership,
            y = poverty,
            group = metro)) +
@@ -217,7 +223,7 @@ ggplot(county,
         y = "Poverty")
 
 #Plot E
-ggplot(county,
+p5 <- ggplot(county,
        aes(x = homeownership,
            y = poverty,
            group = metro,
@@ -233,7 +239,7 @@ ggplot(county,
          linetype = guide_legend(order = 1))
 
 #Plot F
-ggplot(county,
+p6 <- ggplot(county,
        aes(x = homeownership,
            y = poverty,
            group = metro,
@@ -245,7 +251,7 @@ ggplot(county,
         y = "Poverty")
 
 #Plot G
-ggplot(county,
+p7 <- ggplot(county,
        aes(x = homeownership,
            y = poverty,
            color = metro)) +
@@ -257,7 +263,7 @@ ggplot(county,
         y = "Poverty")
 
 #Plot H
-ggplot(county,
+p8 <- ggplot(county,
        aes(x = homeownership,
            y = poverty,
            color = metro)) +
@@ -265,8 +271,19 @@ ggplot(county,
   labs (title = "Plot H",
         x = "Homeownership",
         y = "Poverty")
+
+ag1 <- grid.arrange(p1,p2, ncol =2)
+ag2 <- grid.arrange(p3,p4, ncol =2)
+ag3 <- grid.arrange(p5,p6, ncol =2)
+ag4 <- grid.arrange(p7,p8, ncol =2)
+
 #----------------Exercise 3  Ends-------------------------------
 
+```
+
+
+
+```{r}
 ## 4 - Rental apartments in SF
 #----------------Exercise 4-------------------------------------
 
@@ -305,7 +322,9 @@ ggplot(sf_rentals_filtered, aes(x = year, y = price/ beds, fill = nhood)) +
 #>investors understand how rental prices vary across neighborhoods in San 
 #>Francisco and make informed decisions based on their budget and preferences.
 #----------------Exercise 4  Ends-------------------------------
+```
 
+```{r}
 ## 5 - Napoleon’s march.
 #----------------Exercise 5-------------------------------
 
@@ -318,11 +337,11 @@ print(cities)
 temperature <- napolean$temperatures
 print(temperature)
 
-troops <- napolean$troops 
-print(troops) %>%
+troops <- napolean$troops
+print(troops) 
 
 # Convert string to actual date
-mutate(date = dmy(date)) 
+#mutate(date = dmy(date)) 
 
 #>The troops data includes five variables about troop movement: 
 #>location(lattitude and longitude), number of survivors, direction and group. To get a basic 
@@ -390,6 +409,7 @@ ggplot() +
   guides(color = FALSE, size = FALSE)
 #----------------Exercise 5  Ends-------------------------------
 
+```
 
 # --------The refernce link include --------
 #>1. https://ggplot2.tidyverse.org/reference/
